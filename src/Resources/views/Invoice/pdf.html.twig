@@ -6,34 +6,48 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    
+
     <title>{% block title %}Sylius{% endblock %}</title>
-    
+
     <link rel="stylesheet" href="{{ app.request.getSchemeAndHttpHost() ~ asset('assets/shop/css/style.css') }}">
 </head>
 <body>
-<img src="{{ app.request.getSchemeAndHttpHost() ~ asset('assets/shop/img/logo.png') }}" alt="Sylius logo"
+<img src="{{ app.request.getSchemeAndHttpHost() ~  asset('bundles/somosducha/img/somos-ducha-logo-menu.png') }}" alt="Sylius logo"
      class="ui small image"/>
 <h1 class="ui header">
     <div class="content">
-        {{ 'sylius.ui.order'|trans }} #{{ order.number }}
+        Factura Número: {{ invoice_number  }}
         <div class="sub header">
             <div class="ui horizontal divided list">
                 <div class="item">
+                    {{ 'sylius.ui.order'|trans }} #{{ order.number }}
+                </div>
+                <div class="item">
                     {{ order.checkoutCompletedAt|format_date }}
-                </div>
-                <div class="item">
-                    {{ order.currencyCode }}
-                </div>
-                <div class="item">
-                    {{ flags.fromLocaleCode(order.localeCode) }}{{ order.localeCode|locale }}
                 </div>
             </div>
         </div>
     </div>
 </h1>
 
-{% include '@SyliusShop/Common/Order/_addresses.html.twig' %}
+<div class="ui segment">
+    <div class="ui two column divided stackable grid">
+        <div class="column" id="sylius-billing-address">
+            {% include '@SyliusShop/Common/_address.html.twig' with {'address': order.billingAddress} %}
+        </div>
+        <div class="column" id="sylius-shipping-address">
+            <address>
+                <strong>Somosducha, S.L.</strong></br>
+                <strong>B98971450</strong></br>
+                Calle Dos de Mayo, 7 bajo</br>
+                46920 MIslata – Valencia</br>
+                <i class="es flag"></i>
+                ESPAÑA
+            </address>
+        </div>
+    </div>
+</div>
+
 <table class="ui celled table" id="sylius-order">
     <thead>
     {% include '@SyliusShop/Common/Order/Table/_headers.html.twig' %}
@@ -41,12 +55,12 @@
     <tbody>
     {% for item in order.items %}
         {% import "@SyliusShop/Common/Macro/money.html.twig" as money %}
-        
+
         <tr>
             <td>
                 {% set variant = item.variant %}
                 {% set product = variant.product %}
-                
+
                 <div class="ui header">
                     {% if product.imagesByType('thumbnail') is not empty %}
                         {% set path = product.imagesByType('thumbnail').first.path|imagine_filter(filter|default('sylius_shop_product_thumbnail')) %}
@@ -55,7 +69,7 @@
                     {% else %}
                         {% set path = 'http://placehold.it/200x200' %}
                     {% endif %}
-                    
+
                     <img src="{{ path }}" alt="{{ product.name }}" class="ui bordered image"/>
                     <div class="content">
                         <a href="{{ path('sylius_shop_product_show', {'slug': product.slug, '_locale': product.translation.locale}) }}"

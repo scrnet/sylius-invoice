@@ -2,6 +2,7 @@
 
 namespace Behappy\InvoicePlugin\Controller;
 
+use Behappy\InvoicePlugin\Entity\OrderInvoice;
 use Knp\Bundle\SnappyBundle\Snappy\Response\PdfResponse;
 use Sylius\Component\Core\Model\Order;
 use Sylius\Component\Core\Model\OrderInterface;
@@ -66,7 +67,25 @@ class InvoiceController extends Controller
     
         if($order->getState() !== OrderInterface::STATE_FULFILLED)
             throw new BadRequestHttpException('Order not fulfilled');
-    
+
+        $em = $this->getDoctrine()->getManager();
+        $oOrderInvoice = $em->getRepository('BehappyInvoicePlugin:OrderInvoice')->findOneByOrder( $orderId );
+        if( !$oOrderInvoice ){
+            $oOrderInvoice = new OrderInvoice();
+            $oOrderInvoice->setOrder( $order );
+            $nNumber =  $em->getRepository('BehappyInvoicePlugin:OrderInvoice')->findLastNumber();
+
+            if(!$nNumber){
+                $nNumber = 1;
+            }else{
+                $nNumber = $nNumber['max_number'] + 1;
+            }
+
+            $oOrderInvoice->setNumber( $nNumber );
+            $em->persist( $oOrderInvoice );
+            $em->flush();
+        }
+
         return $this->render('@BehappyInvoice/Invoice/pdf.html.twig', [
             'order' => $order
         ]);
