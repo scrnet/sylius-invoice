@@ -87,7 +87,8 @@ class InvoiceController extends Controller
         }
 
         return $this->render('@BehappyInvoice/Invoice/pdf.html.twig', [
-            'order' => $order
+            'order' => $order,
+            'invoice_number' => sprintf('%08d', $oOrderInvoice->getNumber() )
         ]);
     }
 }
